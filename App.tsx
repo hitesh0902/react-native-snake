@@ -39,21 +39,27 @@ export default function App() {
 
         setSnakePos((oldSnakePos) => {
           const head = oldSnakePos[0];
-          const newHead = {
-            x: head.x,
-            y: head.y,
-            pos: head.pos,
-          };
+          const newHeads: SnakeSegment[] = new Array(3)
+            .fill(0)
+            .map((_, index) => {
+              const copyHead = {
+                x: head.x,
+                y: head.y,
+                pos: oldSnakePos.length + 1 + index,
+              };
+              if (move === MoveEnum.Up) {
+                copyHead.y -= RADIUS * 0.25 * Math.abs(3 - index);
+              } else if (move === MoveEnum.Down) {
+                copyHead.y += RADIUS * 0.25 * Math.abs(3 - index);
+              } else if (move === MoveEnum.Left) {
+                copyHead.x -= RADIUS * 0.25 * Math.abs(3 - index);
+              } else {
+                copyHead.x += RADIUS * 0.25 * Math.abs(3 - index);
+              }
+              return copyHead;
+            });
 
-          if (move === MoveEnum.Up) {
-            newHead.y -= RADIUS * 0.25;
-          } else if (move === MoveEnum.Down) {
-            newHead.y += RADIUS * 0.25;
-          } else if (move === MoveEnum.Left) {
-            newHead.x -= RADIUS * 0.25;
-          } else {
-            newHead.x += RADIUS * 0.25;
-          }
+          const newHead = newHeads.at(-1);
 
           // collision
           const col = oldSnakePos.findIndex(
@@ -71,7 +77,7 @@ export default function App() {
           }
 
           if (canEatFood(newHead, food, RADIUS)) {
-            const newSnake = [newHead, ...oldSnakePos];
+            const newSnake = newHeads.concat(oldSnakePos);
             setFood(generateFood(newSnake, WIDTH - 10, HEIGHT - 10, RADIUS));
             return newSnake;
           }
