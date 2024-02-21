@@ -12,10 +12,17 @@ function validFoodPos(food: Food, snake: SnakeSegment[]): boolean {
   return true;
 }
 
-export function canEatFood(snakeHead: SnakeSegment, food: Food, radius: number): boolean {
+export function canEatFood(
+  snakeHead: SnakeSegment,
+  food: Food,
+  radius: number,
+): boolean {
   const distanceBetweenFoodAndSnakeX: number = Math.abs(snakeHead.x - food.x);
   const distanceBetweenFoodAndSnakeY: number = Math.abs(snakeHead.y - food.y);
-  return distanceBetweenFoodAndSnakeX < radius && distanceBetweenFoodAndSnakeY < radius;
+  return (
+    distanceBetweenFoodAndSnakeX < radius &&
+    distanceBetweenFoodAndSnakeY < radius
+  );
 }
 
 export function generateFood(
