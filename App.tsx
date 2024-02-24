@@ -13,17 +13,23 @@ import {
 } from "react-native-gesture-handler";
 import FoodSVG from "./FoodSVG";
 import { Food, MoveEnum, SnakeSegment } from "./types";
-import { canEatFood, generateFood, generateSnakeSegments } from "./utils/food";
+import { collision } from "./utils/collision";
+import { canEatFood, generateFood } from "./utils/food";
+import {
+  generateInitialSnakeSegments,
+  generateSnakeSegments,
+  getSnakeSegmentKey,
+} from "./utils/snake";
 
-const dimensions = Dimensions.get("window");
-const WIDTH = dimensions.width;
-const HEIGHT = dimensions.height - 100;
+const { width, height } = Dimensions.get("window");
+const WIDTH = width;
+const HEIGHT = height - 100;
 const FRAME_INTERVAL = 1000 / 60;
 const TOLERANCE = 0.1;
 const FOOD_BOX = 25;
-const INTIAL_SNAKE: Array<SnakeSegment> = generateSnakeSegments(WIDTH, HEIGHT);
+const INTIAL_SNAKE = generateInitialSnakeSegments(WIDTH, HEIGHT);
 const INITIAL_FOOD = generateFood(INTIAL_SNAKE, WIDTH, HEIGHT, FOOD_BOX);
-const SNAKE_SEGMENT_FRAMES = new Array(3).fill(0);
+const SNAKE_SEGMENT_FRAMES = new Array(3).fill(0) as number[];
 let lastRenderTime = performance.now();
 
 export default function App() {
@@ -36,69 +42,42 @@ export default function App() {
   useEffect(() => {
     let animationFrameId: number;
 
-    const updateSnake = () => {
+    function updateSnake() {
       const currentRenderTime = performance.now();
       const elapsed = currentRenderTime - lastRenderTime;
 
       if (elapsed >= FRAME_INTERVAL - TOLERANCE) {
         lastRenderTime = currentRenderTime - (elapsed % FRAME_INTERVAL);
 
-        setSnakePos((oldSnakePos) => {
-          const head = oldSnakePos[0];
-          const newHeads: SnakeSegment[] = SNAKE_SEGMENT_FRAMES.map(
-            (_, index, segments) => {
-              const copyHead = {
-                x: head.x,
-                y: head.y,
-                pos: oldSnakePos.length + 1 + index,
-              };
-              const newMove =
-                FOOD_BOX * 0.125 * Math.abs(segments.length - index);
-
-              if (move === MoveEnum.Up) {
-                copyHead.y -= newMove;
-              } else if (move === MoveEnum.Down) {
-                copyHead.y += newMove;
-              } else if (move === MoveEnum.Left) {
-                copyHead.x -= newMove;
-              } else {
-                copyHead.x += newMove;
-              }
-              return copyHead;
-            },
+        setSnakePos((oldSnake) => {
+          const newHeads = generateSnakeSegments(
+            oldSnake,
+            SNAKE_SEGMENT_FRAMES,
+            FOOD_BOX,
+            move,
           );
 
           const newHead = newHeads.at(-1);
 
-          // collision
-          const col = oldSnakePos.findIndex(
-            (seg) => seg.x === newHead.x && seg.y === newHead.y,
-          );
-          const col2 =
-            newHead.x < 0 ||
-            newHead.x + FOOD_BOX > WIDTH ||
-            newHead.y < 0 ||
-            newHead.y + FOOD_BOX > HEIGHT;
-
-          if (col2 || (col !== -1 && col !== oldSnakePos.length - 1)) {
+          if (collision(oldSnake, newHead, WIDTH, HEIGHT, FOOD_BOX)) {
             setGameOver(true);
-            return oldSnakePos;
+            return oldSnake;
           }
 
           if (canEatFood(newHead, food, FOOD_BOX - 10)) {
-            const newSnake = newHeads.concat(oldSnakePos);
+            const newSnake = newHeads.concat(oldSnake);
             setFood(generateFood(newSnake, WIDTH, HEIGHT, FOOD_BOX));
             return newSnake;
           }
 
-          return [newHead, ...oldSnakePos.slice(0, -1)];
+          return [newHead, ...oldSnake.slice(0, -1)];
         });
       }
 
       if (!gameOver) {
         animationFrameId = requestAnimationFrame(updateSnake);
       }
-    };
+    }
 
     if (!gameOver) {
       animationFrameId = requestAnimationFrame(updateSnake);
@@ -145,7 +124,7 @@ export default function App() {
               if (index < 1) {
                 return (
                   <Oval
-                    key={JSON.stringify(seg)}
+                    key={getSnakeSegmentKey(seg)}
                     x={seg.x}
                     y={seg.y}
                     width={
@@ -163,7 +142,7 @@ export default function App() {
 
               return (
                 <Oval
-                  key={JSON.stringify(seg)}
+                  key={getSnakeSegmentKey(seg)}
                   x={seg.x + (isVerticalMove(move) ? 3.5 : 0)}
                   y={seg.y + (isHorizontalMove(move) ? 3.5 : 0)}
                   width={isHorizontalMove(move) ? 18 : 13}

@@ -52,14 +52,3 @@ export function generateFood(
   }
   return food;
 }
-
-export function generateSnakeSegments(
-  width: number,
-  height: number,
-): SnakeSegment[] {
-  const snakeSegments: SnakeSegment[] = [];
-  const x = Math.floor(Math.random() * width);
-  const y = Math.floor(Math.random() * height);
-  snakeSegments.push({ x, y, pos: snakeSegments.length + 1 });
-  return snakeSegments;
-}
