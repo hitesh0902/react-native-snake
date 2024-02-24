@@ -17,6 +17,7 @@ import { collision } from "./utils/collision";
 import { canEatFood, generateFood } from "./utils/food";
 import {
   generateInitialSnakeSegments,
+  generateNextSnakeSegments,
   generateSnakeSegments,
   getSnakeSegmentKey,
 } from "./utils/snake";
@@ -70,7 +71,7 @@ export default function App() {
             return newSnake;
           }
 
-          return [newHead, ...oldSnake.slice(0, -1)];
+          return generateNextSnakeSegments(oldSnake, newHead);
         });
       }
 

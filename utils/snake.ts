@@ -42,3 +42,18 @@ export function generateSnakeSegments(
 export function getSnakeSegmentKey(snakeSegment: SnakeSegment): string {
   return `x${snakeSegment.x}-y${snakeSegment.y}-p${snakeSegment.pos}`;
 }
+
+export function generateNextSnakeSegments(
+  oldSnake: SnakeSegment[],
+  newHead: SnakeSegment,
+): SnakeSegment[] {
+  const segments = new Array(oldSnake.length);
+  for (let i = 0; i < segments.length; i++) {
+    if (i === 0) {
+      segments[i] = newHead;
+    } else {
+      segments[i] = oldSnake[i - 1];
+    }
+  }
+  return segments;
+}
