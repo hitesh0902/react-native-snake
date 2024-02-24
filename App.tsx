@@ -91,7 +91,7 @@ export default function App() {
     };
   }, [gameOver, move, food]);
 
-  const pan = Gesture.Pan().onStart((event) => {
+  const pan = Gesture.Pan().onEnd((event) => {
     if (gameOver) return;
 
     const { translationX, translationY } = event;
