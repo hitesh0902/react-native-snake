@@ -4,8 +4,16 @@ import {
   Oval,
   useCanvasRef,
 } from "@shopify/react-native-skia";
-import { useEffect, useState } from "react";
-import { Dimensions, SafeAreaView, StyleSheet, Text } from "react-native";
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  Button,
+  Dimensions,
+  Modal,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import {
   Gesture,
   GestureDetector,
@@ -39,6 +47,8 @@ export default function App() {
   const [food, setFood] = useState<Food>(INITIAL_FOOD);
   const [move, setMove] = useState<MoveEnum>(MoveEnum.Right);
   const [gameOver, setGameOver] = useState<boolean>(false);
+  const [score, setScore] = useState<number>(0);
+  const gameOverRef = useRef(gameOver);
 
   useEffect(() => {
     let animationFrameId: number;
@@ -61,6 +71,7 @@ export default function App() {
           const newHead = newHeads.at(-1);
 
           if (collision(oldSnake, newHead, WIDTH, HEIGHT, FOOD_BOX)) {
+            gameOverRef.current = true;
             setGameOver(true);
             return oldSnake;
           }
@@ -68,6 +79,7 @@ export default function App() {
           if (canEatFood(newHead, food, FOOD_BOX - 10)) {
             const newSnake = newHeads.concat(oldSnake);
             setFood(generateFood(newSnake, WIDTH, HEIGHT, FOOD_BOX));
+            setScore((prevScore) => prevScore + 10);
             return newSnake;
           }
 
@@ -75,7 +87,7 @@ export default function App() {
         });
       }
 
-      if (!gameOver) {
+      if (!gameOverRef.current) {
         animationFrameId = requestAnimationFrame(updateSnake);
       }
     }
@@ -113,11 +125,18 @@ export default function App() {
     }
   });
 
+  const resetGame = useCallback(() => {
+    setGameOver(false);
+    gameOverRef.current = false;
+    setSnakePos(generateInitialSnakeSegments(WIDTH, HEIGHT));
+    setFood(generateFood(INTIAL_SNAKE, WIDTH, HEIGHT, FOOD_BOX));
+    setMove(MoveEnum.Right);
+    setScore(0);
+  }, []);
+
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.gameStatus}>
-        {gameOver ? "Game Over" : "Playing..."}
-      </Text>
+      <Text style={styles.gameStatus}>{gameOver ? "Game Over" : score}</Text>
       <GestureHandlerRootView>
         <GestureDetector gesture={pan}>
           <Canvas ref={canvasRef} style={styles.canvas}>
@@ -162,6 +181,19 @@ export default function App() {
           </Canvas>
         </GestureDetector>
       </GestureHandlerRootView>
+      <Modal
+        animationType="slide"
+        presentationStyle="pageSheet"
+        hardwareAccelerated
+        onRequestClose={resetGame}
+        visible={gameOver}
+      >
+        <View style={styles.gameOverContainer}>
+          <Text style={styles.gameOverTitle}>Game Over</Text>
+          <Text style={styles.gameOverScore}>{score}</Text>
+          <Button title="Restart" onPress={resetGame} />
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -193,5 +225,22 @@ const styles = StyleSheet.create({
   },
   snakeBody: {
     color: "#789461",
+  },
+  gameOverContainer: {
+    backgroundColor: "#222",
+    width: "100%",
+    height: "100%",
+  },
+  gameOverTitle: {
+    paddingTop: 20,
+    color: "#ffffff",
+    fontSize: 32,
+    textAlign: "center",
+  },
+  gameOverScore: {
+    paddingTop: 20,
+    color: "#ffffff",
+    fontSize: 32,
+    textAlign: "center",
   },
 });
