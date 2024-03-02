@@ -4,18 +4,19 @@ export function generateInitialSnakeSegments(
   width: number,
   height: number,
   move: MoveEnum,
+  foodBox: number,
 ): SnakeSegment[] {
   const snakeSegments: SnakeSegment[] = [];
   let x = Math.floor(Math.random() * width);
   let y = Math.floor(Math.random() * height);
   if (move === MoveEnum.Up) {
-    y += 100;
+    y = Math.min(height - foodBox, y + 100);
   } else if (move === MoveEnum.Down) {
-    y -= 100;
+    y = Math.max(foodBox, y - 100);
   } else if (move === MoveEnum.Left) {
-    x += 100;
+    x = Math.min(width - foodBox, x + 100);
   } else {
-    x -= 100;
+    x = Math.max(foodBox, x - 100);
   }
   snakeSegments.push({ x: x, y, pos: snakeSegments.length + 1 });
   return snakeSegments;

@@ -36,7 +36,12 @@ const FRAME_INTERVAL = 1000 / 60;
 const TOLERANCE = 0.1;
 const FOOD_BOX = 25;
 const INITIAL_MOVE = generateMove();
-const INTIAL_SNAKE = generateInitialSnakeSegments(WIDTH, HEIGHT, INITIAL_MOVE);
+const INTIAL_SNAKE = generateInitialSnakeSegments(
+  WIDTH,
+  HEIGHT,
+  INITIAL_MOVE,
+  FOOD_BOX,
+);
 const INITIAL_FOOD = generateFood(INTIAL_SNAKE, WIDTH, HEIGHT, FOOD_BOX);
 const SNAKE_SEGMENT_FRAMES = new Array(3).fill(0) as number[];
 let lastRenderTime = performance.now();
@@ -132,12 +137,14 @@ export default function App() {
           text: "Play Again",
           onPress: () => {
             const nextMove = generateMove();
-            setSnakePos(generateInitialSnakeSegments(WIDTH, HEIGHT, move));
+            setSnakePos(
+              generateInitialSnakeSegments(WIDTH, HEIGHT, nextMove, FOOD_BOX),
+            );
             setFood(generateFood(INTIAL_SNAKE, WIDTH, HEIGHT, FOOD_BOX));
             setMove(nextMove);
             setScore(0);
-            setGameOver(false);
             gameOverRef.current = false;
+            setGameOver(false);
           },
         },
       ]);
