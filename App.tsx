@@ -23,6 +23,7 @@ import { collision } from "./utils/collision";
 import { canEatFood, generateFood } from "./utils/food";
 import {
   generateInitialSnakeSegments,
+  generateMove,
   generateNextSnakeSegments,
   generateSnakeSegments,
   getSnakeSegmentKey,
@@ -34,7 +35,8 @@ const HEIGHT = height - 100;
 const FRAME_INTERVAL = 1000 / 60;
 const TOLERANCE = 0.1;
 const FOOD_BOX = 25;
-const INTIAL_SNAKE = generateInitialSnakeSegments(WIDTH, HEIGHT);
+const INITIAL_MOVE = generateMove();
+const INTIAL_SNAKE = generateInitialSnakeSegments(WIDTH, HEIGHT, INITIAL_MOVE);
 const INITIAL_FOOD = generateFood(INTIAL_SNAKE, WIDTH, HEIGHT, FOOD_BOX);
 const SNAKE_SEGMENT_FRAMES = new Array(3).fill(0) as number[];
 let lastRenderTime = performance.now();
@@ -43,7 +45,7 @@ export default function App() {
   const canvasRef = useCanvasRef();
   const [snakePos, setSnakePos] = useState<Array<SnakeSegment>>(INTIAL_SNAKE);
   const [food, setFood] = useState<Food>(INITIAL_FOOD);
-  const [move, setMove] = useState<MoveEnum>(MoveEnum.Right);
+  const [move, setMove] = useState<MoveEnum>(INITIAL_MOVE);
   const [gameOver, setGameOver] = useState<boolean>(false);
   const [score, setScore] = useState<number>(0);
   const gameOverRef = useRef(gameOver);
@@ -129,9 +131,10 @@ export default function App() {
         {
           text: "Play Again",
           onPress: () => {
-            setSnakePos(generateInitialSnakeSegments(WIDTH, HEIGHT));
+            const nextMove = generateMove();
+            setSnakePos(generateInitialSnakeSegments(WIDTH, HEIGHT, move));
             setFood(generateFood(INTIAL_SNAKE, WIDTH, HEIGHT, FOOD_BOX));
-            setMove(MoveEnum.Right);
+            setMove(nextMove);
             setScore(0);
             setGameOver(false);
             gameOverRef.current = false;

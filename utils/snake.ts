@@ -3,11 +3,21 @@ import { MoveEnum, SnakeSegment } from "../types";
 export function generateInitialSnakeSegments(
   width: number,
   height: number,
+  move: MoveEnum,
 ): SnakeSegment[] {
   const snakeSegments: SnakeSegment[] = [];
-  const x = Math.floor(Math.random() * width);
-  const y = Math.floor(Math.random() * height);
-  snakeSegments.push({ x, y, pos: snakeSegments.length + 1 });
+  let x = Math.floor(Math.random() * width);
+  let y = Math.floor(Math.random() * height);
+  if (move === MoveEnum.Up) {
+    y += 100;
+  } else if (move === MoveEnum.Down) {
+    y -= 100;
+  } else if (move === MoveEnum.Left) {
+    x += 100;
+  } else {
+    x -= 100;
+  }
+  snakeSegments.push({ x: x, y, pos: snakeSegments.length + 1 });
   return snakeSegments;
 }
 
@@ -56,4 +66,10 @@ export function generateNextSnakeSegments(
     }
   }
   return segments;
+}
+
+const _moves = Object.values(MoveEnum);
+export function generateMove(): MoveEnum {
+  const index = Math.floor(Math.random() * _moves.length);
+  return _moves[index];
 }
