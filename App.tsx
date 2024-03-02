@@ -4,15 +4,13 @@ import {
   Oval,
   useCanvasRef,
 } from "@shopify/react-native-skia";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
-  Button,
+  Alert,
   Dimensions,
-  Modal,
   SafeAreaView,
   StyleSheet,
   Text,
-  View,
 } from "react-native";
 import {
   Gesture,
@@ -125,14 +123,23 @@ export default function App() {
     }
   });
 
-  const resetGame = useCallback(() => {
-    setGameOver(false);
-    gameOverRef.current = false;
-    setSnakePos(generateInitialSnakeSegments(WIDTH, HEIGHT));
-    setFood(generateFood(INTIAL_SNAKE, WIDTH, HEIGHT, FOOD_BOX));
-    setMove(MoveEnum.Right);
-    setScore(0);
-  }, []);
+  useEffect(() => {
+    if (gameOver) {
+      Alert.alert("Game Over", `Your score is ${score}`, [
+        {
+          text: "Play Again",
+          onPress: () => {
+            setSnakePos(generateInitialSnakeSegments(WIDTH, HEIGHT));
+            setFood(generateFood(INTIAL_SNAKE, WIDTH, HEIGHT, FOOD_BOX));
+            setMove(MoveEnum.Right);
+            setScore(0);
+            setGameOver(false);
+            gameOverRef.current = false;
+          },
+        },
+      ]);
+    }
+  }, [gameOver]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -181,19 +188,6 @@ export default function App() {
           </Canvas>
         </GestureDetector>
       </GestureHandlerRootView>
-      <Modal
-        animationType="slide"
-        presentationStyle="pageSheet"
-        hardwareAccelerated
-        onRequestClose={resetGame}
-        visible={gameOver}
-      >
-        <View style={styles.gameOverContainer}>
-          <Text style={styles.gameOverTitle}>Game Over</Text>
-          <Text style={styles.gameOverScore}>{score}</Text>
-          <Button title="Restart" onPress={resetGame} />
-        </View>
-      </Modal>
     </SafeAreaView>
   );
 }
